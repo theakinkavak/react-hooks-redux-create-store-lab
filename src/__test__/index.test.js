@@ -1,28 +1,38 @@
-import { createStore, candyReducer } from "../index";
+export function createStore(reducer) {
+  let state;
 
-describe("createStore()", () => {
-  let store;
+  function dispatch(action) {
+    state = reducer(state, action);
+    render();
+  }
 
-  beforeEach(() => {
-    store = createStore(candyReducer);
-  });
+  function getState() {
+    return state;
+  }
 
-  it("returns an object", () => {
-    expect(typeof store).toBe("object");
-  });
+  return {
+    dispatch,
+    getState,
+  };
+}
 
-  describe("getState()", () => {
-    it("returns the default state based on the reducer for the store", () => {
-      store.dispatch({ type: "@@INIT" });
-      expect(store.getState()).toEqual([]);
-    });
-  });
+export function candyReducer(state = [], action) {
+  switch (action.type) {
+    case "candies/add":
+      return [...state, action.candy];
+    default:
+      return state;
+  }
+}
 
-  describe("dispatch()", () => {
-    it("can dispatch actions with data associated to update the state", () => {
-      store.dispatch({ type: "candies/add", candy: "Jelly Beans" });
-      let todos = store.getState();
-      expect(todos).toEqual(["Jelly Beans"]);
-    });
-  });
-});
+function render() {
+  let container = document.getElementById("container");
+  if (store.getState()) {
+    container.textContent = store.getState().join(" ");
+  } else {
+    throw new Error("the store's state has not been defined yet");
+  }
+}
+
+const store = createStore(candyReducer);
+store.dispatch({ type: "@@INIT" });
